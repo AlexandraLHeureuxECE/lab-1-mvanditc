@@ -1,5 +1,7 @@
 instructions for running the project locally: Tic Tac Toe application is available on the GitHub pages deployment on this repository.
+
 the GitHub Pages URL: https://alexandralheureuxece.github.io/lab-1-mvanditc/
+
 the LLM tool(s) used: ChatGPT
 
 
