@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+
+    <style>
+        body {
+            font-family: "Comic Sans MS", "Comic Sans", cursive;
+            text-align: center;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        .controls {
+            margin: 15px 0;
+        }
+
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            font-size: 16px;
+            display: none;
+        }
+
+        button.active {
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .status {
+            margin: 10px 0;
+            font-size: 18px;
+            min-height: 24px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            justify-content: center;
+            margin: 20px auto;
+            pointer-events: none;
+        }
+
+        .board.active {
+            pointer-events: auto;
+        }
+
+        .cell {
+            background: #ffffff;
+            font-size: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: default;
+            user-select: none;
+        }
+
+        .board.active .cell {
+            cursor: pointer;
+        }
+
+        .color-pickers {
+            margin-top: 20px;
+        }
+
+        .color-pickers label {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tic Tac Toe</h1>
+
+    <div class="controls">
+        <button id="startBtn" class="active">Start Game</button>
+        <button id="restartBtn">Restart</button>
+        <button id="playAgainBtn">Play Again</button>
+    </div>
+
+    <div class="status" id="statusText"></div>
+
+    <div class="board" id="board">
+        <!-- 9 cells -->
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+
+    <div class="color-pickers">
+        <label>
+            Board Color:
+            <input type="color" id="boardColor" value="#ffffff">
+        </label>
+
+        <label>
+            X Color:
+            <input type="color" id="xColor" value="#000000">
+        </label>
+
+        <label>
+            O Color:
+            <input type="color" id="oColor" value="#000000">
+        </label>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const statusText = document.getElementById('statusText');
+        const board = document.getElementById('board');
+        const cells = document.querySelectorAll('.cell');
+
+        const boardColorPicker = document.getElementById('boardColor');
+        const xColorPicker = document.getElementById('xColor');
+        const oColorPicker = document.getElementById('oColor');
+
+        let gameRunning = false;
+        let currentPlayer = 'X';
+        let boardState = Array(9).fill(null);
+
+        const winPatterns = [
+            [0,1,2],[3,4,5],[6,7,8],
+            [0,3,6],[1,4,7],[2,5,8],
+            [0,4,8],[2,4,6]
+        ];
+
+        function startGame() {
+            gameRunning = true;
+            currentPlayer = 'X';
+            boardState.fill(null);
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.style.color = '';
+            });
+
+            board.classList.add('active');
+            startBtn.classList.remove('active');
+            restartBtn.classList.add('active');
+            playAgainBtn.classList.remove('active');
+
+            statusText.textContent = "Player X's turn";
+        }
+
+        function endGame(message) {
+            gameRunning = false;
+            board.classList.remove('active');
+            restartBtn.classList.remove('active');
+            playAgainBtn.classList.add('active');
+            statusText.textContent = message;
+        }
+
+        function checkWin() {
+            return winPatterns.some(pattern => {
+                const [a,b,c] = pattern;
+                return boardState[a] &&
+                       boardState[a] === boardState[b] &&
+                       boardState[a] === boardState[c];
+            });
+        }
+
+        function checkDraw() {
+            return boardState.every(cell => cell !== null);
+        }
+
+        function handleCellClick(e) {
+            if (!gameRunning) return;
+
+            const index = e.target.dataset.index;
+            if (boardState[index]) return;
+
+            boardState[index] = currentPlayer;
+            e.target.textContent = currentPlayer;
+            e.target.style.color = currentPlayer === 'X'
+                ? xColorPicker.value
+                : oColorPicker.value;
+
+            if (checkWin()) {
+                endGame(`Player ${currentPlayer} wins!`);
+                return;
+            }
+
+            if (checkDraw()) {
+                endGame("It's a draw!");
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            statusText.textContent = `Player ${currentPlayer}'s turn`;
+        }
+
+        cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+        playAgainBtn.addEventListener('click', startGame);
+
+        boardColorPicker.addEventListener('input', () => {
+            cells.forEach(cell => cell.style.background = boardColorPicker.value);
+        });
+
+        xColorPicker.addEventListener('input', () => {
+            cells.forEach(cell => {
+                if (cell.textContent === 'X') {
+                    cell.style.color = xColorPicker.value;
+                }
+            });
+        });
+
+        oColorPicker.addEventListener('input', () => {
+            cells.forEach(cell => {
+                if (cell.textContent === 'O') {
+                    cell.style.color = oColorPicker.value;
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
